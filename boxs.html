@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Number Color Challenge</title>
+<style>
+body {
+    background: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+}
+.grid {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.cell {
+    width: min(18vw, 90px);
+    height: min(18vw, 90px);
+    background: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: min(10vw, 40px);
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+    border-radius: 5px;
+}
+.info {
+    color: gold;
+    text-align: center;
+    white-space: pre-line;
+}
+</style>
+</head>
+<body>
+
+<h1 id="pN" class="info"></h1>
+<h1 id="sc" class="info"></h1>
+<h2 id="clicks" class="info"></h2>
+<h1 style="color:white;">Number Color Challenge</h1>
+
+<div class="grid">
+    <div class="cell" id="cell1" onclick="f.working('cell1')">0</div>
+    <div class="cell" id="cell2" onclick="f.working('cell2')">0</div>
+    <div class="cell" id="cell3" onclick="f.working('cell3')">0</div>
+    <div class="cell" id="cell4" onclick="f.working('cell4')">0</div>
+    <div class="cell" id="cell5" onclick="f.working('cell5')">0</div>
+</div>
+
+<script>
+let pN = document.getElementById("pN");
+let sc = document.getElementById("sc");
+let clicksDisplay = document.getElementById("clicks");
+
+let pT = 'p1';
+let f = {
+    score: { p1:0, p2:0 },
+    scoreManagerList: { cell1:"", cell2:"", cell3:"", cell4:"", cell5:"" },
+    clicksCurrentRound: { p1:0, p2:0 },
+    
+    showScore() {
+        sc.textContent = `Player1: ${f.score.p1}\nPlayer2: ${f.score.p2}`;
+        clicksDisplay.textContent = `Current clicks - Player1: ${f.clicksCurrentRound.p1} | Player2: ${f.clicksCurrentRound.p2}`;
+    },
+
+    boxNumberGen() {
+        return Math.floor(Math.random()*100)+1;
+    },
+
+    showNumber(num, boxId) {
+        document.getElementById(boxId).textContent = num;
+    },
+
+    colorChanger(boxId, color) {
+        document.getElementById(boxId).style.background = color;
+    },
+
+    boxColorManager(boxId, num) {
+        if(num % 3 ===0 && num % 5 ===0) {
+            f.colorChanger(boxId,'gold');
+            f.scoreManagerList[boxId] = 'gold';
+        } else if(num % 5 ===0) {
+            f.colorChanger(boxId,'green');
+            f.scoreManagerList[boxId] = 'green';
+        } else if(num % 3 ===0) {
+            f.colorChanger(boxId,'red');
+            f.scoreManagerList[boxId] = 'red';
+        } else {
+            f.colorChanger(boxId,'white');
+            f.scoreManagerList[boxId] = '';
+        }
+    },
+
+    isValidSet(obj) {
+        const colors = Object.values(obj);
+        if(colors.includes("")) return false;
+        const set = new Set(colors);
+        if(set.has('red') && set.has('green')) return false;
+        if(set.size===1 && (set.has('red') || set.has('green') || set.has('gold'))) return true;
+        if(set.size===2 && set.has('green') && set.has('gold')) return true;
+        if(set.size===2 && set.has('red') && set.has('gold')) return true;
+        return false;
+    },
+
+    working(boxId) {
+        f.clicksCurrentRound[pT]++;
+        let num = f.boxNumberGen();
+        f.showNumber(num, boxId);
+        f.boxColorManager(boxId,num);
+        f.showScore();
+
+        if(f.isValidSet(f.scoreManagerList)) {
+            alert(`${pT} finished their turn with ${f.clicksCurrentRound[pT]} clicks!`);
+            
+            f.scoreManagerList = { cell1:"", cell2:"", cell3:"", cell4:"", cell5:"" };
+            ["cell1","cell2","cell3","cell4","cell5"].forEach(id=>{
+                document.getElementById(id).textContent = 0;
+                document.getElementById(id).style.background = "white";
+            });
+
+            if(pT==='p1') {
+                pT='p2';
+                pN.textContent = `Player ${pT} turn`;
+            } else {
+                let winner = (f.clicksCurrentRound.p1 <= f.clicksCurrentRound.p2) ? 'p1':'p2';
+                f.score[winner]++;
+                alert(`Round winner: ${winner} with ${f.clicksCurrentRound[winner]} clicks`);
+                pT='p1';
+                f.clicksCurrentRound={p1:0, p2:0};
+                f.showScore();
+                pN.textContent = `Player ${pT} turn`;
+            }
+        }
+    }
+}
+
+pN.textContent = `Player ${pT} turn`;
+f.showScore();
+</script>
+</body>
+</html>
